@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SHIFAU EXPLAINER</title>
+
+  <link rel="stylesheet" href="style.css">
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
+</head>
+
+<body>
+
+  <div class="card">
+
+    <!-- HEADER -->
+    <div class="header">
+      <img src="logo.png" class="logo" alt="logo">
+
+      <div>
+        <h1>SHIFAU EXPLAINER</h1>
+        <p class="subtitle">Upload • Store • Share Files</p>
+      </div>
+    </div>
+
+    <!-- UPLOAD BOX -->
+    <div class="upload-box">
+
+      <label for="fileInput" class="drop-area">
+        <div class="icon">📁</div>
+        <p>Click or drag files here</p>
+        <span>Videos • PDFs • Images • All files supported</span>
+      </label>
+
+      <input type="file" id="fileInput" multiple>
+
+    </div>
+
+    <!-- BUTTON -->
+    <button id="uploadBtn" class="upload-btn">
+      ⬆ Upload Files
+    </button>
+
+    <p id="status"></p>
+
+  </div>
+
+</body>
+</html>
