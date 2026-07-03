@@ -1,62 +1,106 @@
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
-  import {
-    getStorage,
-    ref,
-    uploadBytesResumable,
-    getDownloadURL
-  } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-storage.js";
+// ===== Cloudinary Configuration =====
+const CLOUD_NAME = "p3fvgont";
+const UPLOAD_PRESET = "shifau_upload";
+const PASSWORD = "SHIFAU";
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyDEKq-V5yiiZlnkFAm509PaOjEQ2O-uae0",
-    authDomain: "shifau-explainer.firebaseapp.com",
-    projectId: "shifau-explainer",
-    storageBucket: "shifau-explainer.firebasestorage.app",
-    messagingSenderId: "95376583442",
-    appId: "1:95376583442:web:b8c2b06a872477a2a9a1cb",
-    measurementId: "G-8PZHL6XRXS"
-  };
+// ===== Elements =====
+const passwordInput = document.getElementById("password");
+const unlockBtn = document.getElementById("unlockBtn");
+const uploadArea = document.getElementById("uploadArea");
+const fileInput = document.getElementById("fileInput");
+const uploadBtn = document.getElementById("uploadBtn");
+const progress = document.getElementById("progress");
+const status = document.getElementById("status");
 
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-  const storage = getStorage(app);
+let unlocked = false;
 
-  // Get page elements
-  const fileInput = document.getElementById("fileInput");
-  const uploadBtn = document.getElementById("uploadBtn");
-  const status = document.getElementById("status");
+// ===== Unlock =====
+unlockBtn.addEventListener("click", () => {
 
-  uploadBtn.addEventListener("click", () => {
-    const files = fileInput.files;
+    if (passwordInput.value.trim() === PASSWORD) {
 
-    if (files.length === 0) {
-      status.textContent = "Please select a file.";
-      return;
+        unlocked = true;
+        uploadArea.classList.remove("locked");
+
+        status.innerHTML = "✅ Upload unlocked";
+
+    } else {
+
+        status.innerHTML = "❌ Incorrect password";
+
     }
 
-    Array.from(files).forEach(file => {
-      const storageRef = ref(storage, "uploads/" + Date.now() + "_" + file.name);
+});
 
-      const uploadTask = uploadBytesResumable(storageRef, file);
+// ===== Upload =====
+uploadBtn.addEventListener("click", async () => {
 
-      uploadTask.on(
-        "state_changed",
-        (snapshot) => {
-          const progress = Math.round(
-            (snapshot.bytesTransferred / snapshot.totalBytes) * 100
-          );
-          status.textContent = `Uploading... ${progress}%`;
-        },
-        (error) => {
-          status.textContent = "❌ Upload failed.";
-          console.error(error);
-        },
-        async () => {
-          const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-          status.innerHTML = `✅ Upload complete!<br><a href="${downloadURL}" target="_blank">Open uploaded file</a>`;
-          console.log(downloadURL);
+    if (!unlocked) {
+
+        status.innerHTML = "🔒 Unlock first";
+        return;
+
+    }
+
+    if (fileInput.files.length === 0) {
+
+        status.innerHTML = "📁 Select a file first";
+        return;
+
+    }
+
+    for (const file of fileInput.files) {
+
+        const formData = new FormData();
+
+        formData.append("file", file);
+        formData.append("upload_preset", UPLOAD_PRESET);
+
+        progress.innerHTML = `Uploading ${file.name}...`;
+
+        try {
+
+            const response = await fetch(
+                `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/auto/upload`,
+                {
+                    method: "POST",
+                    body: formData
+                }
+            );
+
+            const data = await response.json();
+
+            if (data.secure_url) {
+
+                status.innerHTML += `
+                    <p>
+                        ✅ ${file.name}<br>
+                        <a href="${data.secure_url}" target="_blank">
+                            Open File
+                        </a>
+                    </p>
+                `;
+
+            } else {
+
+                status.innerHTML += `
+                    <p>❌ Failed: ${file.name}</p>
+                `;
+
+            }
+
+        } catch (error) {
+
+            console.error(error);
+
+            status.innerHTML += `
+                <p>❌ Error uploading ${file.name}</p>
+            `;
+
         }
-      );
-    });
-  });
-</script>
+
+    }
+
+    progress.innerHTML = "🎉 Upload Complete";
+
+});
